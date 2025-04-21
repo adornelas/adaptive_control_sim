@@ -24,6 +24,7 @@ error = np.zeros(steps)
 for t in range(1, steps):
     error[t] = v_ref[t] - v_measured[t-1]
     u[t] = controller.update(error[t], dt)
+    u[t] = max(min(u[t], 1.0), -1.0)  # saturate control action
     v[t] = robot.update(u[t])
     v_measured[t] = v[t] + np.random.normal(0, 0.02)  # sensor noise
 
