@@ -10,3 +10,13 @@ This repository contains simulation scripts to test linear velocity control usin
 - Sensor noise modeling (for encoder/IMU)
 - Real-time parameter adaptation
 - Visualization of system response and control signals
+
+## Using the simulations with virtual environment
+
+```bash
+git clone https://github.com/adornelas/adaptive_control_sim.git
+cd adaptive_control_sim
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
