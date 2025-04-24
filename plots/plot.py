@@ -1,7 +1,7 @@
-from controllers.pid import PIDController
-from models.robot_pwm_model import RobotWithPWMModel
 import matplotlib.pyplot as plt
 import numpy as np
+from controllers.pid import PIDController
+from models.robot_pwm_model import RobotWithPWMModel
 
 class SimulationPlotter:
     def __init__(self, T=10, dt=0.01, v_setpoint=1.0, w_setpoint=0.0):
@@ -10,7 +10,7 @@ class SimulationPlotter:
         self.v_setpoint = v_setpoint
         self.w_setpoint = w_setpoint
 
-    def plot(self):
+    def run_simulation(self):
         steps = int(self.T / self.dt)
         time = np.arange(0, self.T, self.dt)
 
@@ -44,36 +44,51 @@ class SimulationPlotter:
             v_measured[t] = robot.v
             w_measured[t] = robot.w
 
-        # Plot
-        plt.figure(figsize=(10, 10))
-        plt.subplot(4, 1, 1)
-        plt.plot(time, v_ref, '--', label='v_ref')
-        plt.plot(time, v_measured, label='v_measured')
-        plt.ylabel('v (m/s)')
+        return time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l
+
+    def plot(self, v=True, w=True, pwm=True, error=True):
+        time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l = self.run_simulation()
+        config = {
+            'v_plot': v,
+            'w_plot': w,
+            'error_plot': error,
+            'pwm_plot': pwm
+        }
+        self.plot_all(time, config, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l)
+
+    def plot_response(self, time, data, labels, title, ylabel):
+        for y, label in zip(data, labels):
+            plt.plot(time, y, label=label)
+        plt.title(title)
+        plt.ylabel(ylabel)
         plt.legend()
         plt.grid()
 
-        plt.subplot(4, 1, 2)
-        plt.plot(time, w_ref, '--', label='w_ref')
-        plt.plot(time, w_measured, label='w_measured')
-        plt.ylabel('w (rad/s)')
-        plt.legend()
-        plt.grid()
+    def plot_all(self, time, config, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l):
+        plots = sum(config.values())
+        plt.figure(figsize=(10, 3 * plots))
+        plot_idx = 1
 
-        plt.subplot(4, 1, 3)
-        plt.plot(time, pwm_r, label='PWM Right', color='blue')
-        plt.plot(time, pwm_l, label='PWM Left', color='green')
-        plt.ylabel('PWM')
-        plt.legend()
-        plt.grid()
+        if config['v_plot']:
+            plt.subplot(plots, 1, plot_idx)
+            self.plot_response(time, [v_ref, v_measured], ['v_ref', 'v_measured'], 'Linear Velocity', 'v (m/s)')
+            plot_idx += 1
 
-        plt.subplot(4, 1, 4)
-        plt.plot(time, v_error, label='v_error', color='red')
-        plt.plot(time, w_error, label='w_error', color='orange')
-        plt.ylabel('Error')
+        if config['w_plot']:
+            plt.subplot(plots, 1, plot_idx)
+            self.plot_response(time, [w_ref, w_measured], ['w_ref', 'w_measured'], 'Angular Velocity', 'w (rad/s)')
+            plot_idx += 1
+
+        if config['error_plot']:
+            plt.subplot(plots, 1, plot_idx)
+            self.plot_response(time, [v_error, w_error], ['v_error', 'w_error'], 'Control Errors', 'Error')
+            plot_idx += 1
+
+        if config['pwm_plot']:
+            plt.subplot(plots, 1, plot_idx)
+            self.plot_response(time, [pwm_r, pwm_l], ['PWM Right', 'PWM Left'], 'Control Signals', 'PWM')
+            plot_idx += 1
+
         plt.xlabel('Time (s)')
-        plt.legend()
-        plt.grid()
-
         plt.tight_layout()
         plt.show()
