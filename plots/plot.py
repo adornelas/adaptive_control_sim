@@ -58,7 +58,8 @@ class SimulationPlotter:
 
     def plot_response(self, time, data, labels, title, ylabel):
         for y, label in zip(data, labels):
-            plt.plot(time, y, label=label)
+            linestyle = '--' if 'ref' in label else '-'  # dashed line for reference signals
+            plt.plot(time, y, label=label, linestyle=linestyle)
         plt.title(title)
         plt.ylabel(ylabel)
         plt.legend()
