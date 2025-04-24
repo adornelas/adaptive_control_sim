@@ -1,0 +1,79 @@
+from controllers.pid import PIDController
+from models.robot_pwm_model import RobotWithPWMModel
+import matplotlib.pyplot as plt
+import numpy as np
+
+class SimulationPlotter:
+    def __init__(self, T=10, dt=0.01, v_setpoint=1.0, w_setpoint=0.0):
+        self.T = T
+        self.dt = dt
+        self.v_setpoint = v_setpoint
+        self.w_setpoint = w_setpoint
+
+    def plot(self):
+        steps = int(self.T / self.dt)
+        time = np.arange(0, self.T, self.dt)
+
+        v_ref = self.v_setpoint * np.ones(steps)
+        w_ref = self.w_setpoint * np.ones(steps)
+
+        v_measured = np.zeros(steps)
+        w_measured = np.zeros(steps)
+
+        v_error = np.zeros(steps)
+        w_error = np.zeros(steps)
+
+        pwm_r = np.zeros(steps)
+        pwm_l = np.zeros(steps)
+
+        robot = RobotWithPWMModel()
+        v_pid = PIDController(kp=1.0, ki=1.1, kd=0.05, imax=2.0)
+        w_pid = PIDController(kp=1.0, ki=1.1, kd=0.05, imax=2.0)
+
+        for t in range(1, steps):
+            v_error[t] = v_ref[t] - v_measured[t-1]
+            w_error[t] = w_ref[t] - w_measured[t-1]
+
+            v_cmd = v_pid.update(v_error[t], self.dt)
+            w_cmd = w_pid.update(w_error[t], self.dt)
+
+            pwm_r[t] = np.clip(v_cmd + w_cmd, -1.0, 1.0)
+            pwm_l[t] = np.clip(v_cmd - w_cmd, -1.0, 1.0)
+
+            robot.update(pwm_r[t], pwm_l[t], self.dt)
+            v_measured[t] = robot.v
+            w_measured[t] = robot.w
+
+        # Plot
+        plt.figure(figsize=(10, 10))
+        plt.subplot(4, 1, 1)
+        plt.plot(time, v_ref, '--', label='v_ref')
+        plt.plot(time, v_measured, label='v_measured')
+        plt.ylabel('v (m/s)')
+        plt.legend()
+        plt.grid()
+
+        plt.subplot(4, 1, 2)
+        plt.plot(time, w_ref, '--', label='w_ref')
+        plt.plot(time, w_measured, label='w_measured')
+        plt.ylabel('w (rad/s)')
+        plt.legend()
+        plt.grid()
+
+        plt.subplot(4, 1, 3)
+        plt.plot(time, pwm_r, label='PWM Right', color='blue')
+        plt.plot(time, pwm_l, label='PWM Left', color='green')
+        plt.ylabel('PWM')
+        plt.legend()
+        plt.grid()
+
+        plt.subplot(4, 1, 4)
+        plt.plot(time, v_error, label='v_error', color='red')
+        plt.plot(time, w_error, label='w_error', color='orange')
+        plt.ylabel('Error')
+        plt.xlabel('Time (s)')
+        plt.legend()
+        plt.grid()
+
+        plt.tight_layout()
+        plt.show()
