@@ -80,8 +80,12 @@ class SimulationPlotter:
 
         return time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l
 
-    def plot(self, v=True, w=True, pwm=True, error=True):
-        time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l = self.run_simulation_firmware()
+    def plot(self, v=True, w=True, pwm=True, error=True, firmware_like=True):
+        if firmware_like:
+            time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l = self.run_simulation_firmware()
+        else:
+            time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l = self.run_simulation()
+
         config = {
             'v_plot': v,
             'w_plot': w,
