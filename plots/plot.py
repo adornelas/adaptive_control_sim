@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from controllers.pid import PIDController
+from controllers.pid import PIDController, FirmwareController
 from models.robot_pwm_model import RobotWithPWMModel
 
 class SimulationPlotter:
@@ -45,9 +45,43 @@ class SimulationPlotter:
             w_measured[t] = robot.w
 
         return time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l
+    
+    def run_simulation_firmware(self):
+        steps = int(self.T / self.dt)
+        time = np.arange(0, self.T, self.dt)
+
+        v_ref = self.v_setpoint * np.ones(steps)
+        w_ref = self.w_setpoint * np.ones(steps)
+
+        v_measured = np.zeros(steps)
+        w_measured = np.zeros(steps)
+
+        v_error = np.zeros(steps)
+        w_error = np.zeros(steps)
+
+        pwm_r = np.zeros(steps)
+        pwm_l = np.zeros(steps)
+
+        robot = RobotWithPWMModel()
+        w_pid = FirmwareController(kp=1.0, ki=1.1, kd=0.05, imax=2.0)
+
+        for t in range(1, steps):
+            v_error[t] = v_ref[t] - v_measured[t-1]
+            w_error[t] = w_ref[t] - w_measured[t-1]
+
+            v_cmd, w_cmd = w_pid.update(v_ref=v_ref[t], w_error=w_error[t], dt= self.dt)
+
+            pwm_r[t] = np.clip(v_cmd + w_cmd, -1.0, 1.0)
+            pwm_l[t] = np.clip(v_cmd - w_cmd, -1.0, 1.0)
+
+            robot.update(pwm_r[t], pwm_l[t], self.dt)
+            v_measured[t] = robot.v
+            w_measured[t] = robot.w
+
+        return time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l
 
     def plot(self, v=True, w=True, pwm=True, error=True):
-        time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l = self.run_simulation()
+        time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l = self.run_simulation_firmware()
         config = {
             'v_plot': v,
             'w_plot': w,
