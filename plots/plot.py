@@ -77,12 +77,7 @@ class SimulationPlotter:
             robot.update(pwm_r[t], pwm_l[t], self.dt)
             v_measured[t] = robot.v
             w_measured[t] = robot.w
-            print("Primeiros valores (0 a 4):")
-            for i in range(5):
-                print(f"t={time[i]:.3f}s | v_error={v_error[i]:.3f}, w_error={w_error[i]:.3f}, pwm_r={pwm_r[i]:.3f}, pwm_l={pwm_l[i]:.3f}")
-
             
-
         return time, v_ref, v_measured, w_ref, w_measured, v_error, w_error, pwm_r, pwm_l
 
     def plot(self, v=True, w=True, pwm=True, error=True, firmware_like=True):
