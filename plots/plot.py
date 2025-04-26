@@ -71,8 +71,8 @@ class SimulationPlotter:
 
             v_cmd, w_cmd = w_pid.update(v_ref=v_ref[t], w_error=w_error[t], dt= self.dt)
 
-            pwm_r[t] = np.clip(v_cmd + w_cmd, -1.0, 1.0)
-            pwm_l[t] = np.clip(v_cmd - w_cmd, -1.0, 1.0)
+            pwm_r[t] = np.clip(v_cmd, -1.0, 1.0)
+            pwm_l[t] = np.clip(w_cmd, -1.0, 1.0)
 
             robot.update(pwm_r[t], pwm_l[t], self.dt)
             v_measured[t] = robot.v
