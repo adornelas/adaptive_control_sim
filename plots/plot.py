@@ -4,18 +4,20 @@ from controllers.pid import PIDController, FirmwareController
 from models.robot_pwm_model import RobotWithPWMModel
 
 class SimulationPlotter:
-    def __init__(self, T=10, dt=0.01, v_setpoint=1.0, w_setpoint=0.0):
+    def __init__(self, T=10, dt=0.01, v_setpoint=1.0, w_setpoint=0.0, type_v='step', type_w='step'):
         self.T = T
         self.dt = dt
         self.v_setpoint = v_setpoint
         self.w_setpoint = w_setpoint
+        self.type_v = type_v
+        self.type_w = type_w
 
     def run_simulation(self):
         steps = int(self.T / self.dt)
         time = np.arange(0, self.T, self.dt)
 
-        v_ref = self.v_setpoint * np.ones(steps)
-        w_ref = self.w_setpoint * np.ones(steps)
+        v_ref = self.generate_reference(time, type=self.type_v, amplitude=self.v_setpoint)
+        w_ref = self.generate_reference(time, type=self.type_w, amplitude=self.w_setpoint)
 
         v_measured = np.zeros(steps)
         w_measured = np.zeros(steps)
@@ -50,8 +52,8 @@ class SimulationPlotter:
         steps = int(self.T / self.dt)
         time = np.arange(0, self.T, self.dt)
 
-        v_ref = self.v_setpoint * np.ones(steps)
-        w_ref = self.w_setpoint * np.ones(steps)
+        v_ref = self.generate_reference(time, type=self.type_v, amplitude=self.v_setpoint)
+        w_ref = self.generate_reference(time, type=self.type_w, amplitude=self.w_setpoint)
 
         v_measured = np.zeros(steps)
         w_measured = np.zeros(steps)
@@ -131,3 +133,15 @@ class SimulationPlotter:
         plt.xlabel('Time (s)')
         plt.tight_layout()
         plt.show()
+
+    def generate_reference(self, time, type='step', amplitude=1.0, frequency=1.0):
+        if type == 'step':
+            return amplitude * np.ones_like(time)
+        elif type == 'square':
+            return amplitude * np.sign(np.sin(2 * np.pi * frequency * time))
+        elif type == 'sawtooth':
+            return amplitude * (2 * (time * frequency - np.floor(time * frequency + 0.5)))
+        elif type == 'sinusoid':
+            return amplitude * np.sin(2 * np.pi * frequency * time)
+        else:
+            raise ValueError("Unknown reference type")
