@@ -65,7 +65,8 @@ class SimulationPlotter:
         pwm_l = np.zeros(steps)
 
         robot = RobotWithPWMModel()
-        w_pid = FirmwareController(kp=1.0, ki=1.1, kd=0.05, imax=2.0)
+        # Constants from the original firmware
+        w_pid = FirmwareController(kp=2.70, ki=0.3, kd=-0.03, imax=64.0)
 
         for t in range(1, steps):
             v_error[t] = v_ref[t] - v_measured[t-1]
