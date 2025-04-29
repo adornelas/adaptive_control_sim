@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from controllers.pid import PIDController, FirmwareController
-from models.robot_pwm_model import RobotWithPWMModel
+from models.robot_model import RobotModel
 
 class SimulationPlotter:
     def __init__(self, T=10, dt=0.01, v_setpoint=1.0, w_setpoint=0.0, type_v='step', type_w='step'):
@@ -28,7 +28,7 @@ class SimulationPlotter:
         pwm_r = np.zeros(steps)
         pwm_l = np.zeros(steps)
 
-        robot = RobotWithPWMModel()
+        robot = RobotModel()
         v_pid = PIDController(kp=1.0, ki=1.1, kd=0.05, imax=2.0)
         w_pid = PIDController(kp=1.0, ki=1.1, kd=0.05, imax=2.0)
 
@@ -64,7 +64,7 @@ class SimulationPlotter:
         pwm_r = np.zeros(steps)
         pwm_l = np.zeros(steps)
 
-        robot = RobotWithPWMModel()
+        robot = RobotModel()
         # Constants from the original firmware
         w_pid = FirmwareController(kp=2.70, ki=0.3, kd=-0.03, imax=64.0)
 

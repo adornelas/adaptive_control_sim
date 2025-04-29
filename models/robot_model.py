@@ -1,4 +1,4 @@
-class RobotWithPWMModel:
+class RobotModel:
     def __init__(self, R=0.015, L=0.075, tau=0.2, v_max=113.6):
         self.R = R          # wheel radius
         self.L = L          # distance between wheels
