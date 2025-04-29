@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from controllers.pid import PIDController, FirmwareController
+from controllers.pid import PIDController
+from baseline_firmware.firmware_controller import FirmwareController
 from models.robot_model import RobotModel
 
 class SimulationPlotter:
